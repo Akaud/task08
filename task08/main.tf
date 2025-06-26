@@ -83,15 +83,8 @@ module "redis" {
   depends_on          = [azurerm_resource_group.resource_group, module.keyvault]
 }
 
-
-resource "time_sleep" "wait_for_aks_api" {
-  depends_on = [
-    module.aks
-  ]
-  create_duration = "100s"
-}
-
 resource "kubectl_manifest" "secret_provider_class" {
+  provider = kubectl.aks_cluster_context
   yaml_body = templatefile("${path.module}/k8s-manifests/secret-provider.yaml.tftpl", {
     aks_kv_access_identity_id  = module.aks.aks_node_identity_client_id
     kv_name                    = module.keyvault.keyvault_name
@@ -99,12 +92,11 @@ resource "kubectl_manifest" "secret_provider_class" {
     redis_password_secret_name = var.redis_primary_key
     tenant_id                  = data.azurerm_client_config.current.tenant_id
   })
-  depends_on = [
-    time_sleep.wait_for_aks_api
-  ]
+  depends_on = [time_sleep.wait_for_aks_api]
 }
 
 resource "kubectl_manifest" "app_deployment" {
+  provider = kubectl.aks_cluster_context
   yaml_body = templatefile("${path.module}/k8s-manifests/deployment.yaml.tftpl", {
     acr_login_server = module.acr.acr_login_server
     app_image_name   = var.image_name
@@ -112,7 +104,7 @@ resource "kubectl_manifest" "app_deployment" {
   })
   depends_on = [
     kubectl_manifest.secret_provider_class,
-    module.acr.azurerm_container_registry_task_schedule_run_now
+    module.acr.azurerm_container_registry_task_schedule_run
   ]
 
   wait_for {
@@ -124,6 +116,7 @@ resource "kubectl_manifest" "app_deployment" {
 }
 
 resource "kubectl_manifest" "app_service" {
+  provider   = kubectl.aks_cluster_context
   yaml_body  = file("${path.module}/k8s-manifests/service.yaml")
   depends_on = [kubectl_manifest.app_deployment]
 
@@ -137,10 +130,23 @@ resource "kubectl_manifest" "app_service" {
 }
 
 data "kubernetes_service" "app_service_lb" {
+  provider = kubernetes.aks_cluster_context
   metadata {
     name = "redis-flask-app-service"
   }
   depends_on = [kubectl_manifest.app_service]
 }
+
+data "azurerm_kubernetes_cluster" "aks_cluster" {
+  name                = local.aks_name
+  resource_group_name = azurerm_resource_group.resource_group.name
+  depends_on          = [module.aks]
+}
+
+resource "time_sleep" "wait_for_aks_api" {
+  create_duration = "120s"
+  depends_on      = [data.azurerm_kubernetes_cluster.aks_cluster]
+}
+
 
 data "azurerm_client_config" "current" {}

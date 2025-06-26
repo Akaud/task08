@@ -20,7 +20,7 @@ resource "azurerm_container_group" "aci_instance" {
     cpu    = local.aci_sku_map[var.aci_sku].cpu
     memory = local.aci_sku_map[var.aci_sku].memory
     ports {
-      port     = 80
+      port     = 8080
       protocol = "TCP"
     }
     environment_variables = {

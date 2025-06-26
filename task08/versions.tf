@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = ">= 2.23.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = "~> 0.9"
+    }
   }
 }
 
@@ -20,17 +24,21 @@ provider "azurerm" {
   features {}
 }
 
+provider "kubernetes" {}
+provider "kubectl" {}
 
 provider "kubernetes" {
-  host                   = module.aks.aks_kube_config.host
-  client_certificate     = base64decode(module.aks.aks_kube_config.client_certificate)
-  client_key             = base64decode(module.aks.aks_kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks.aks_kube_config.cluster_ca_certificate)
+  alias                  = "aks_cluster_context"
+  host                   = data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.host
+  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.client_certificate)
+  client_key             = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.cluster_ca_certificate)
 }
 
 provider "kubectl" {
-  host                   = module.aks.aks_kube_config.host
-  client_certificate     = base64decode(module.aks.aks_kube_config.client_certificate)
-  client_key             = base64decode(module.aks.aks_kube_config.client_key)
-  cluster_ca_certificate = base64decode(module.aks.aks_kube_config.cluster_ca_certificate)
+  alias                  = "aks_cluster_context"
+  host                   = data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.host
+  client_certificate     = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.client_certificate)
+  client_key             = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.cluster_ca_certificate)
 }
