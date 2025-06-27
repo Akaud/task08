@@ -3,7 +3,7 @@ tags = { Creator = "vladyslav_levchenko@epam.com" }
 resources_name_prefix = "cmtr-pp46akvy-mod8"
 location              = "North Europe"
 
-acr_sku    = "Standard"
+acr_sku    = "Basic"
 image_name = "cmtr-pp46akvy-mod8-app"
 
 redis_sku_family  = "C"
