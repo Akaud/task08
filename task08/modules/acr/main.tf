@@ -25,7 +25,6 @@ resource "azurerm_container_registry_task" "registry_task" {
     image_names          = ["${var.image_name}:latest"]
   }
   depends_on = [
-    azurerm_container_registry.registry,
     time_sleep.wait_for_acr_dns
   ]
 }

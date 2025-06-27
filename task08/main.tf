@@ -16,8 +16,8 @@ module "aci" {
   acr_id              = module.acr.acr_id
   image_name          = var.image_name
   key_vault_id        = module.keyvault.key_vault_id
-  redis_hostname      = var.redis_hostname
-  redis_primary_key   = var.redis_primary_key
+  redis_hostname      = module.redis.redis_hostname
+  redis_primary_key   = module.redis.redis_primary_access_key
   key_vault_uri       = module.keyvault.key_vault_uri
   acr_admin_username  = module.acr.acr_admin_username
   acr_admin_password  = module.acr.acr_admin_password

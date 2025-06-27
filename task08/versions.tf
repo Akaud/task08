@@ -24,9 +24,6 @@ provider "azurerm" {
   features {}
 }
 
-provider "kubernetes" {}
-provider "kubectl" {}
-
 provider "kubernetes" {
   alias                  = "aks_cluster_context"
   host                   = data.azurerm_kubernetes_cluster.aks_cluster.kube_config.0.host
